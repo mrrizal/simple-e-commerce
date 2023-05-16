@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"tabungan-api/app/models"
+	"strconv"
 	"tabungan-api/app/services"
 	"tabungan-api/utils"
 
@@ -9,41 +9,50 @@ import (
 )
 
 type ProductController struct {
-	CustomerService services.CustomerService
+	ProductService services.ProductService
 }
 
-func (this *CustomerController) SingUp(c *fiber.Ctx) error {
-	var customer models.Customer
-	if err := c.BodyParser(&customer); err != nil {
-		return err
+func (this *ProductController) Get(c *fiber.Ctx) error {
+	productID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		utils.ErrorResp(c, "product not found", 404)
 	}
 
-	token, err, statusCode := this.CustomerService.SignUp(customer)
+	product, err, statusCode := this.ProductService.Get(productID)
 	if err != nil {
 		return utils.ErrorResp(c, err.Error(), statusCode)
 	}
 
-	var result models.SignUpResponseOk
-	result.Token = token
-
 	c.Status(200)
-	return c.JSON(result)
+	return c.JSON(product)
 }
 
-func (this *CustomerController) SignIn(c *fiber.Ctx) error {
-	var customer models.SignInRequest
-	if err := c.BodyParser(&customer); err != nil {
-		return err
-	}
-
-	token, err, statusCode := this.CustomerService.SignIn(customer)
+func (this *ProductController) GetAll(c *fiber.Ctx) error {
+	product, err, statusCode := this.ProductService.GetAll()
 	if err != nil {
 		return utils.ErrorResp(c, err.Error(), statusCode)
 	}
 
-	var result models.SignUpResponseOk
-	result.Token = token
+	c.Status(200)
+	return c.JSON(product)
+}
+
+func (this *ProductController) GetMultiple(c *fiber.Ctx) error {
+	type IDS struct {
+		IDs []int `json:"ids"`
+	}
+
+	var ids IDS
+
+	if err := c.BodyParser(&ids); err != nil {
+		return utils.ErrorResp(c, err.Error(), 400)
+	}
+
+	product, err, statusCode := this.ProductService.GetMultiple(ids.IDs)
+	if err != nil {
+		return utils.ErrorResp(c, err.Error(), statusCode)
+	}
 
 	c.Status(200)
-	return c.JSON(result)
+	return c.JSON(product)
 }

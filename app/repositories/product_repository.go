@@ -11,7 +11,8 @@ import (
 
 type ProductRepository interface {
 	Get(productID int) (models.Product, error, int)
-	// GetAll() (models.ProductList, error, int)
+	GetAll() ([]models.Product, error, int)
+	GetMultiple([]int) ([]models.Product, error, int)
 }
 
 type productRepository struct {
@@ -26,8 +27,12 @@ func (this *productRepository) Get(productID int) (models.Product, error, int) {
 	var product models.Product
 	sqlStmt := fmt.Sprintf(`SELECT id, name, price, description, image FROM product WHERE id = '%d'`, productID)
 
-	err := this.db.QueryRow(context.Background(), sqlStmt).Scan(&product)
+	err := this.db.QueryRow(context.Background(),
+		sqlStmt).Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Image)
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			return models.Product{}, errors.New("product not found"), 404
+		}
 		return models.Product{}, err, 500
 	}
 
@@ -38,29 +43,43 @@ func (this *productRepository) Get(productID int) (models.Product, error, int) {
 	return product, nil, 0
 }
 
-// func (this *customerRepository) IsExists(field, value string) bool {
-// 	var customerID int
+func (this *productRepository) GetAll() ([]models.Product, error, int) {
+	sqlStmt := fmt.Sprintf(`SELECT id, name, price, description, image FROM product`)
 
-// 	sqlStmt := fmt.Sprintf("SELECT id FROM customer WHERE %s = '%s'", field, value)
-// 	err := this.db.QueryRow(context.Background(), sqlStmt).Scan(&customerID)
-// 	if err != nil {
-// 		return false
-// 	}
-// 	return customerID != 0
-// }
+	rows, err := this.db.Query(context.Background(), sqlStmt)
+	defer rows.Close()
+	if err != nil {
+		return []models.Product{}, err, 500
+	}
 
-// func (this *customerRepository) SignIn(customer models.SignInRequest) models.Customer {
-// 	var cust models.Customer
+	var results []models.Product
+	for rows.Next() {
+		var product models.Product
+		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Image)
+		if err != nil {
+			return []models.Product{}, err, 500
+		}
+		results = append(results, product)
+	}
+	return results, nil, 0
+}
 
-// 	sqlStmt := fmt.Sprintf("SELECT id, name, email, password FROM customer WHERE email = '%s'",
-// 		customer.Email)
+func (this *productRepository) GetMultiple(ids []int) ([]models.Product, error, int) {
+	sqlStmt := `SELECT id, name, price, description, image FROM product WHERE id = ANY($1::integer[])`
 
-// 	err := this.db.QueryRow(context.Background(), sqlStmt).Scan(
-// 		&cust.ID, &cust.Name, &cust.Email, &cust.Password)
+	rows, err := this.db.Query(context.Background(), sqlStmt, ids)
+	if err != nil {
+		return []models.Product{}, err, 500
+	}
 
-// 	if err != nil {
-// 		return models.Customer{}
-// 	}
-
-// 	return cust
-// }
+	var results []models.Product
+	for rows.Next() {
+		var product models.Product
+		err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Image)
+		if err != nil {
+			return []models.Product{}, err, 500
+		}
+		results = append(results, product)
+	}
+	return results, nil, 0
+}

@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type SignUpResponseOk struct {
 	Token string `json:"token"`
@@ -24,6 +27,14 @@ type Customer struct {
 }
 
 type Product struct {
+	ID          int            `json:"id"`
+	Name        string         `json:"name"`
+	Price       string         `json:"price"`
+	Description sql.NullString `json:"description"`
+	Image       sql.NullString `json:"image"`
+}
+
+type ProductResp struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Price       string `json:"price"`
@@ -32,7 +43,7 @@ type Product struct {
 }
 
 type ProductList struct {
-	Results []Product `json:"results"`
+	Results []ProductResp `json:"results"`
 }
 
 type Rekening struct {
