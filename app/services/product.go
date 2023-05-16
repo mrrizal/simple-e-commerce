@@ -1,8 +1,8 @@
 package services
 
 import (
-	"tabungan-api/app/models"
-	"tabungan-api/app/repositories"
+	"e-commerce-api/app/models"
+	"e-commerce-api/app/repositories"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

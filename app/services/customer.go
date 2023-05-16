@@ -1,10 +1,12 @@
 package services
 
 import (
+	"e-commerce-api/app/configs"
+	"e-commerce-api/app/models"
+	"e-commerce-api/app/repositories"
+	"strconv"
+
 	"errors"
-	"tabungan-api/app/configs"
-	"tabungan-api/app/models"
-	"tabungan-api/app/repositories"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -94,4 +96,8 @@ func (this *CustomerService) SignIn(customer models.SignInRequest) (string, erro
 		return "", err, 500
 	}
 	return token, nil, 0
+}
+
+func (this *CustomerService) IsExists(id int) bool {
+	return this.CustomerRepository.IsExists("id", strconv.Itoa(id))
 }

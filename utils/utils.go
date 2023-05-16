@@ -1,28 +1,29 @@
 package utils
 
 import (
-	"fmt"
-	"math/rand"
-	"tabungan-api/app/models"
-	"time"
+	"e-commerce-api/app/models"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateAccountNumber(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	min := int64(pow(10, length-1))
-	max := int64(pow(10, length) - 1)
-	number := rand.Int63n(max-min+1) + min
-	return fmt.Sprintf("%0*d", length, number)
-}
+func ParseJWTToken(tokenString, secretKey string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
 
-func pow(x, y int) int {
-	p := 1
-	for i := 0; i < y; i++ {
-		p *= x
+	if err != nil {
+		return map[string]interface{}{}, err
 	}
-	return p
+
+	if token.Valid {
+		claims := token.Claims.(jwt.MapClaims)
+		return fiber.Map{"claims": claims}, nil
+	}
+
+	return map[string]interface{}{}, errors.New("invalid token")
+
 }
 
 func ErrorResp(c *fiber.Ctx, message string, statusCode int) error {

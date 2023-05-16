@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"tabungan-api/app/models"
-	"tabungan-api/app/services"
-	"tabungan-api/utils"
+	"e-commerce-api/app/models"
+	"e-commerce-api/app/services"
+	"e-commerce-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -26,7 +26,7 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 	var result models.SignUpResponseOk
 	result.Token = token
 
-	c.Status(200)
+	c.Status(201)
 	return c.JSON(result)
 }
 

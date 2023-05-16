@@ -1,9 +1,10 @@
 package controllers
 
 import (
+	"e-commerce-api/app/services"
+	"e-commerce-api/utils"
+
 	"strconv"
-	"tabungan-api/app/services"
-	"tabungan-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )

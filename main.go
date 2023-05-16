@@ -1,10 +1,10 @@
 package main
 
 import (
+	"e-commerce-api/app/configs"
+	"e-commerce-api/routes"
 	"fmt"
 	"log"
-	"tabungan-api/app/configs"
-	"tabungan-api/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"

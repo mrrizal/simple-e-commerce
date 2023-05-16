@@ -46,29 +46,39 @@ type ProductList struct {
 	Results []ProductResp `json:"results"`
 }
 
-type Rekening struct {
-	NoRekening string  `json:"no_rekening"`
-	NasabahID  int     `json:"nasabah_id"`
-	Saldo      float64 `json:"saldo"`
+type OrderRequest struct {
+	Status     string `json:"status"`
+	CustomerID int    `json:"customer_id"`
+	ProductsID []int  `json:"products_id"`
 }
 
-type TransaksiRequest struct {
-	NoRekening   string  `json:"no_rekening"`
-	Nominal      float64 `json:"nominal"`
-	CurrentSaldo float64 `json:"current_saldo"`
-	Type         string  `json:"type"`
+type Order struct {
+	ID         int       `json:"id"`
+	CustomerID int       `json:"customer_id"`
+	Products   []int     `json:"products"`
+	Status     string    `json:"status"`
+	Date       time.Time `json:"date"`
 }
 
-type TransaksiResponseOk struct {
-	Saldo float64 `json:"saldo"`
+type OrderDetail struct {
+	ID        int `json:"id"`
+	OrderID   int `json:"order_id"`
+	ProductID int `json:"product_id"`
 }
 
-type MutasiTransaksi struct {
-	Waktu         time.Time `json:"waktu"`
-	KodeTransaksi string    `json:"kode_transaksi"`
-	Nominal       float64   `json:"nominal"`
+type OrderResp struct {
+	ID     int    `json:"id"`
+	Status string `json:"status"`
 }
 
-type MutasiResp struct {
-	Results []MutasiTransaksi `json:"results"`
+type OrderData struct {
+	ID         int           `json:"id"`
+	CustomerID int           `json:"customer_id"`
+	Status     string        `json:"status"`
+	Date       time.Time     `json:"date"`
+	Products   []ProductResp `json:"products"`
+}
+
+type OrderDataResp struct {
+	Results []OrderData `json:"results"`
 }

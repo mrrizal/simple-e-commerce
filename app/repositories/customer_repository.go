@@ -1,9 +1,10 @@
 package repositories
 
 import (
+	"e-commerce-api/app/models"
+
 	"context"
 	"fmt"
-	"tabungan-api/app/models"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
