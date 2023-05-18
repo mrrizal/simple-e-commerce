@@ -3,7 +3,6 @@ package controllers
 import (
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/services"
-	"e-commerce-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,13 +19,13 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 
 	resp := this.CustomerService.SignUp(customer)
 	if resp.Err != nil {
-		errResp := utils.ErrorResponse{
+		errResp := models.ErrorResponse{
 			Message:    resp.Err.Error(),
 			StatusCode: resp.StatusCode}
 		return errResp.Resp(c)
 	}
 
-	successResp := utils.SuccessResponse{
+	successResp := models.SuccessResponse{
 		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
 		StatusCode: 201,
 	}
@@ -41,14 +40,14 @@ func (this *CustomerController) SignIn(c *fiber.Ctx) error {
 
 	resp := this.CustomerService.SignIn(customer)
 	if resp.Err != nil {
-		errResp := utils.ErrorResponse{
+		errResp := models.ErrorResponse{
 			Message:    resp.Err.Error(),
 			StatusCode: resp.StatusCode,
 		}
 		return errResp.Resp(c)
 	}
 
-	successResp := utils.SuccessResponse{
+	successResp := models.SuccessResponse{
 		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
 		StatusCode: 201,
 	}
