@@ -18,16 +18,19 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err, statusCode := this.CustomerService.SignUp(customer)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	resp := this.CustomerService.SignUp(customer)
+	if resp.Err != nil {
+		errResp := utils.ErrorResponse{
+			Message:    resp.Err.Error(),
+			StatusCode: resp.StatusCode}
+		return errResp.Resp(c)
 	}
 
-	var result models.SignUpResponseOk
-	result.Token = token
-
-	c.Status(201)
-	return c.JSON(result)
+	successResp := utils.SuccessResponse{
+		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
+		StatusCode: 201,
+	}
+	return successResp.Resp(c)
 }
 
 func (this *CustomerController) SignIn(c *fiber.Ctx) error {
@@ -36,14 +39,18 @@ func (this *CustomerController) SignIn(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err, statusCode := this.CustomerService.SignIn(customer)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	resp := this.CustomerService.SignIn(customer)
+	if resp.Err != nil {
+		errResp := utils.ErrorResponse{
+			Message:    resp.Err.Error(),
+			StatusCode: resp.StatusCode,
+		}
+		return errResp.Resp(c)
 	}
 
-	var result models.SignUpResponseOk
-	result.Token = token
-
-	c.Status(200)
-	return c.JSON(result)
+	successResp := utils.SuccessResponse{
+		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
+		StatusCode: 201,
+	}
+	return successResp.Resp(c)
 }
