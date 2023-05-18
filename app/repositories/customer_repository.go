@@ -10,9 +10,9 @@ import (
 )
 
 type CustomerRepository interface {
-	SignUp(customer models.Customer) (models.Customer, error, int)
+	SignUp(customer models.Customer) models.Result
 	IsExists(field, value string) bool
-	SignIn(models.SignInRequest) models.Customer
+	SignIn(models.SignInRequest) models.Result
 }
 
 type customerRepository struct {
@@ -23,7 +23,7 @@ func NewCustomerRepository(db *pgxpool.Pool) CustomerRepository {
 	return &customerRepository{db: db}
 }
 
-func (this *customerRepository) SignUp(customer models.Customer) (models.Customer, error, int) {
+func (this *customerRepository) SignUp(customer models.Customer) models.Result {
 	sqlStmt := `
 		INSERT INTO Customer (name, email, password)
 		VALUES ($1, $2, $3) RETURNING id
@@ -37,11 +37,17 @@ func (this *customerRepository) SignUp(customer models.Customer) (models.Custome
 		customer.Password).Scan(&customerID)
 
 	if err != nil {
-		return models.Customer{}, err, 500
+		return models.Result{
+			Data:       models.Customer{},
+			Err:        err,
+			StatusCode: 500}
 	}
 
 	customer.ID = customerID
-	return customer, nil, 0
+	return models.Result{
+		Data:       customer,
+		Err:        nil,
+		StatusCode: 0}
 }
 
 func (this *customerRepository) IsExists(field, value string) bool {
@@ -55,7 +61,7 @@ func (this *customerRepository) IsExists(field, value string) bool {
 	return customerID != 0
 }
 
-func (this *customerRepository) SignIn(customer models.SignInRequest) models.Customer {
+func (this *customerRepository) SignIn(customer models.SignInRequest) models.Result {
 	var cust models.Customer
 
 	sqlStmt := fmt.Sprintf("SELECT id, name, email, password FROM customer WHERE email = '%s'",
@@ -65,8 +71,16 @@ func (this *customerRepository) SignIn(customer models.SignInRequest) models.Cus
 		&cust.ID, &cust.Name, &cust.Email, &cust.Password)
 
 	if err != nil {
-		return models.Customer{}
+		return models.Result{
+			Data:       models.Customer{},
+			Err:        err,
+			StatusCode: 404,
+		}
 	}
 
-	return cust
+	return models.Result{
+		Data:       cust,
+		Err:        nil,
+		StatusCode: 0,
+	}
 }
