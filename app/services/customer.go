@@ -14,19 +14,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CustomerService struct {
+type CustomerService interface {
+	SignUp(models.Customer) models.Result
+	SignIn(models.SignInRequest) models.Result
+	IsExists(int) bool
+}
+
+type customerService struct {
 	CustomerRepository repositories.CustomerRepository
 	config             configs.Config
 }
 
 func NewCustomerService(db *pgxpool.Pool) CustomerService {
-	return CustomerService{
+	return &customerService{
 		CustomerRepository: repositories.NewCustomerRepository(db),
 		config:             configs.LoadConfig(),
 	}
 }
 
-func (this *CustomerService) generatePassword(password string) (string, error) {
+func (this *customerService) generatePassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -34,12 +40,12 @@ func (this *CustomerService) generatePassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func (this *CustomerService) verifyPassword(customerPassword, password string) bool {
+func (this *customerService) verifyPassword(customerPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(customerPassword), []byte(password))
 	return err == nil
 }
 
-func (this *CustomerService) generateJWTToken(customer models.Customer) (string, error) {
+func (this *customerService) generateJWTToken(customer models.Customer) (string, error) {
 	claims := jwt.MapClaims{
 		"id":    customer.ID,
 		"name":  customer.Name,
@@ -56,48 +62,69 @@ func (this *CustomerService) generateJWTToken(customer models.Customer) (string,
 	return signedToken, nil
 }
 
-func (this *CustomerService) SignUp(customer models.Customer) (string, error, int) {
+func (this *customerService) SignUp(customer models.Customer) models.Result {
 	emailIsExists := this.CustomerRepository.IsExists("email", customer.Email)
 	if emailIsExists {
-		return "", errors.New("email already exists"), 400
+		return models.Result{
+			Data:       "",
+			Err:        errors.New("email already exists"),
+			StatusCode: 400,
+		}
 	}
 
 	tempPassword, err := this.generatePassword(customer.Password)
 	if err != nil {
-		return "", err, 500
+		return models.Result{
+			Data:       "",
+			Err:        err,
+			StatusCode: 500,
+		}
 	}
 	customer.Password = tempPassword
 
-	customer, err, statusCode := this.CustomerRepository.SignUp(customer)
-	if err != nil {
-		return "", err, statusCode
+	resp := this.CustomerRepository.SignUp(customer)
+	if resp.Err != nil {
+		return models.Result{
+			Data:       "",
+			Err:        resp.Err,
+			StatusCode: resp.StatusCode,
+		}
 	}
 
-	token, err := this.generateJWTToken(customer)
+	token, err := this.generateJWTToken(resp.Data.(models.Customer))
 	if err != nil {
-		return "", err, 500
+		return models.Result{
+			Data:       "",
+			Err:        err,
+			StatusCode: 500,
+		}
 	}
-	return token, nil, 0
+
+	return models.Result{
+		Data:       token,
+		Err:        nil,
+		StatusCode: 0,
+	}
 }
 
-func (this *CustomerService) SignIn(customer models.SignInRequest) (string, error, int) {
-	cust := this.CustomerRepository.SignIn(customer)
-	if cust.ID == 0 {
-		return "", errors.New("user doesn't exists"), 404
+func (this *customerService) SignIn(customer models.SignInRequest) models.Result {
+	resp := this.CustomerRepository.SignIn(customer)
+	if resp.Data.(models.Customer).ID == 0 {
+		return models.Result{Data: "", Err: errors.New("user doesn't exists"), StatusCode: 404}
 	}
 
-	isValidPassword := this.verifyPassword(cust.Password, customer.Password)
+	isValidPassword := this.verifyPassword(resp.Data.(models.Customer).Password, customer.Password)
 	if !isValidPassword {
-		return "", errors.New("invalid email or password"), 401
+		return models.Result{Data: "", Err: errors.New("invalid email or password"), StatusCode: 401}
 	}
 
-	token, err := this.generateJWTToken(cust)
+	token, err := this.generateJWTToken(resp.Data.(models.Customer))
 	if err != nil {
-		return "", err, 500
+		return models.Result{Data: "", Err: err, StatusCode: 500}
 	}
-	return token, nil, 0
+	return models.Result{Data: token, Err: nil, StatusCode: 0}
 }
 
-func (this *CustomerService) IsExists(id int) bool {
+func (this *customerService) IsExists(id int) bool {
 	return this.CustomerRepository.IsExists("id", strconv.Itoa(id))
 }
