@@ -5,19 +5,6 @@ import (
 	"time"
 )
 
-type SignUpResponseOk struct {
-	Token string `json:"token"`
-}
-
-type SignInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type ErrorResponse struct {
-	Message string `json:"message"`
-}
-
 type Customer struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -34,22 +21,8 @@ type Product struct {
 	Image       sql.NullString `json:"image"`
 }
 
-type ProductResp struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Price       string `json:"price"`
-	Description string `json:"description"`
-	Image       string `json:"image"`
-}
-
 type ProductList struct {
 	Results []ProductResp `json:"results"`
-}
-
-type OrderRequest struct {
-	Status     string `json:"status"`
-	CustomerID int    `json:"customer_id"`
-	ProductsID []int  `json:"products_id"`
 }
 
 type Order struct {
@@ -66,19 +39,10 @@ type OrderDetail struct {
 	ProductID int `json:"product_id"`
 }
 
-type OrderResp struct {
-	ID     int    `json:"id"`
-	Status string `json:"status"`
-}
-
 type OrderData struct {
 	ID         int           `json:"id"`
 	CustomerID int           `json:"customer_id"`
 	Status     string        `json:"status"`
 	Date       time.Time     `json:"date"`
 	Products   []ProductResp `json:"products"`
-}
-
-type OrderDataResp struct {
-	Results []OrderData `json:"results"`
 }
