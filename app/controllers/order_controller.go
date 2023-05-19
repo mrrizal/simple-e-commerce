@@ -108,13 +108,17 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 	token := strings.Split(c.Get("Authorization"), " ")[1]
 
 	// validate customer
-	customerID, err, statusCode := this.CustomerValidator.ValidateCustomer(token)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	customerID, err := this.CustomerValidator.ValidateCustomer(token)
+	if err.Err != nil {
+		errResp := models.ErrorResponse{
+			Message:    err.Err.Error(),
+			StatusCode: err.StatusCode,
+		}
+		return errResp.Resp(c)
 	}
 
 	orderData, productData, custErr := this.OrderService.GetOrder(customerID)
-	if err != nil {
+	if err.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    custErr.Err.Error(),
 			StatusCode: custErr.StatusCode,
