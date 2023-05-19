@@ -17,16 +17,16 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp := this.CustomerService.SignUp(customer)
-	if resp.Err != nil {
+	resp, err := this.CustomerService.SignUp(customer)
+	if err.Err != nil {
 		errResp := models.ErrorResponse{
-			Message:    resp.Err.Error(),
-			StatusCode: resp.StatusCode}
+			Message:    err.Err.Error(),
+			StatusCode: err.StatusCode}
 		return errResp.Resp(c)
 	}
 
 	successResp := models.SuccessResponse{
-		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
+		Message:    models.SignUpResponseOk{Token: resp},
 		StatusCode: 201,
 	}
 	return successResp.Resp(c)
@@ -38,17 +38,17 @@ func (this *CustomerController) SignIn(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp := this.CustomerService.SignIn(customer)
-	if resp.Err != nil {
+	resp, err := this.CustomerService.SignIn(customer)
+	if err.Err != nil {
 		errResp := models.ErrorResponse{
-			Message:    resp.Err.Error(),
-			StatusCode: resp.StatusCode,
+			Message:    err.Err.Error(),
+			StatusCode: err.StatusCode,
 		}
 		return errResp.Resp(c)
 	}
 
 	successResp := models.SuccessResponse{
-		Message:    models.SignUpResponseOk{Token: resp.Data.(string)},
+		Message:    models.SignUpResponseOk{Token: resp},
 		StatusCode: 201,
 	}
 	return successResp.Resp(c)

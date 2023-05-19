@@ -48,3 +48,26 @@ func (this *SuccessResponse) Resp(c *fiber.Ctx) error {
 	c.Status(this.StatusCode)
 	return c.JSON(this.Message)
 }
+
+type CustomError struct {
+	Err        error
+	StatusCode int
+}
+
+type CustomerRepositoryResult struct {
+	Data       Customer
+	Err        error
+	StatusCode int
+}
+
+type TokenResponse struct {
+	Data       string
+	Err        error
+	StatusCode int
+}
+
+type OrderRepositoryOrderResult struct {
+	Data       OrderResp
+	Err        error
+	StatusCode int
+}

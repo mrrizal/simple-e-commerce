@@ -15,8 +15,8 @@ import (
 )
 
 type CustomerService interface {
-	SignUp(models.Customer) models.Result
-	SignIn(models.SignInRequest) models.Result
+	SignUp(models.Customer) (string, models.CustomError)
+	SignIn(models.SignInRequest) (string, models.CustomError)
 	IsExists(int) bool
 }
 
@@ -62,67 +62,51 @@ func (this *customerService) generateJWTToken(customer models.Customer) (string,
 	return signedToken, nil
 }
 
-func (this *customerService) SignUp(customer models.Customer) models.Result {
+func (this *customerService) SignUp(customer models.Customer) (string, models.CustomError) {
 	emailIsExists := this.CustomerRepository.IsExists("email", customer.Email)
 	if emailIsExists {
-		return models.Result{
-			Data:       "",
-			Err:        errors.New("email already exists"),
-			StatusCode: 400,
-		}
+		return "", models.CustomError{Err: errors.New("email already exists"), StatusCode: 400}
 	}
 
 	tempPassword, err := this.generatePassword(customer.Password)
 	if err != nil {
-		return models.Result{
-			Data:       "",
-			Err:        err,
-			StatusCode: 500,
-		}
+		return "", models.CustomError{Err: err, StatusCode: 500}
 	}
 	customer.Password = tempPassword
 
-	resp := this.CustomerRepository.SignUp(customer)
-	if resp.Err != nil {
-		return models.Result{
-			Data:       "",
-			Err:        resp.Err,
-			StatusCode: resp.StatusCode,
-		}
+	resp, custErr := this.CustomerRepository.SignUp(customer)
+	if custErr.Err != nil {
+		return "", custErr
 	}
 
-	token, err := this.generateJWTToken(resp.Data.(models.Customer))
+	token, err := this.generateJWTToken(resp)
 	if err != nil {
-		return models.Result{
-			Data:       "",
-			Err:        err,
-			StatusCode: 500,
-		}
+		return "", models.CustomError{Err: err, StatusCode: 500}
 	}
 
-	return models.Result{
-		Data:       token,
-		Err:        nil,
-		StatusCode: 0,
-	}
+	return token, models.CustomError{nil, 0}
 }
 
-func (this *customerService) SignIn(customer models.SignInRequest) models.Result {
-	resp := this.CustomerRepository.SignIn(customer)
-	if resp.Data.(models.Customer).ID == 0 {
-		return models.Result{Data: "", Err: errors.New("user doesn't exists"), StatusCode: 404}
+func (this *customerService) SignIn(customer models.SignInRequest) (string, models.CustomError) {
+	resp, custErr := this.CustomerRepository.SignIn(customer)
+	if custErr.Err != nil {
+		return "", custErr
 	}
 
-	isValidPassword := this.verifyPassword(resp.Data.(models.Customer).Password, customer.Password)
+	if resp.ID == 0 {
+		return "", models.CustomError{Err: errors.New("user doesn't exists"), StatusCode: 404}
+	}
+
+	isValidPassword := this.verifyPassword(resp.Password, customer.Password)
 	if !isValidPassword {
-		return models.Result{Data: "", Err: errors.New("invalid email or password"), StatusCode: 401}
+		return "", models.CustomError{Err: errors.New("invalid email or password"), StatusCode: 401}
 	}
 
-	token, err := this.generateJWTToken(resp.Data.(models.Customer))
+	token, err := this.generateJWTToken(resp)
 	if err != nil {
-		return models.Result{Data: "", Err: err, StatusCode: 500}
+		return "", models.CustomError{Err: err, StatusCode: 500}
 	}
-	return models.Result{Data: token, Err: nil, StatusCode: 0}
+	return token, models.CustomError{Err: nil, StatusCode: 0}
 }
 
 func (this *customerService) IsExists(id int) bool {

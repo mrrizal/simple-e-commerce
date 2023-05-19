@@ -7,34 +7,39 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type OrderService struct {
+type OrderService interface {
+	CreateOrder(models.OrderRequest) (models.OrderResp, models.CustomError)
+	GetOrder(int) (map[int]models.OrderData, [][]int, models.CustomError)
+}
+
+type orderService struct {
 	OrderRepository repositories.OrderRepository
 }
 
 func NewOrderService(db *pgxpool.Pool) OrderService {
-	return OrderService{
+	return &orderService{
 		OrderRepository: repositories.NewOrderRepository(db),
 	}
 }
 
-func (this *OrderService) CreateOrder(order models.OrderRequest) (models.OrderResp, error, int) {
-	orderResp, err, statusCode := this.OrderRepository.CreateOrder(order)
-	if err != nil {
-		return models.OrderResp{}, err, statusCode
+func (this *orderService) CreateOrder(order models.OrderRequest) (models.OrderResp, models.CustomError) {
+	orderResp, err := this.OrderRepository.CreateOrder(order)
+	if err.Err != nil {
+		return models.OrderResp{}, err
 	}
 
-	err, statusCode = this.OrderRepository.CreateOrderDetail(orderResp.ID, order)
-	if err != nil {
-		return models.OrderResp{}, err, statusCode
+	resp := this.OrderRepository.CreateOrderDetail(orderResp.ID, order)
+	if resp.Err != nil {
+		return models.OrderResp{}, err
 	}
 
-	return orderResp, nil, 0
+	return orderResp, models.CustomError{Err: nil, StatusCode: 0}
 }
 
-func (this *OrderService) GetOrder(customerID int) (map[int]models.OrderData, [][]int, error, int) {
-	orders, err, statusCode := this.OrderRepository.GetOrder(customerID)
-	if err != nil {
-		return make(map[int]models.OrderData), [][]int{}, err, statusCode
+func (this *orderService) GetOrder(customerID int) (map[int]models.OrderData, [][]int, models.CustomError) {
+	orders, err := this.OrderRepository.GetOrder(customerID)
+	if err.Err != nil {
+		return make(map[int]models.OrderData), [][]int{}, err
 	}
 	orderIds := []int{}
 
@@ -49,14 +54,14 @@ func (this *OrderService) GetOrder(customerID int) (map[int]models.OrderData, []
 		orderIds = append(orderIds, order.ID)
 	}
 
-	orderDetails, err, statusCode := this.OrderRepository.GetDetailOrder(orderIds)
-	if err != nil {
-		return make(map[int]models.OrderData), [][]int{}, err, statusCode
+	orderDetails, err := this.OrderRepository.GetDetailOrder(orderIds)
+	if err.Err != nil {
+		return make(map[int]models.OrderData), [][]int{}, err
 	}
 
 	productsData := [][]int{}
 	for _, orderDetail := range orderDetails {
 		productsData = append(productsData, []int{orderDetail.OrderID, orderDetail.ProductID})
 	}
-	return mapOrders, productsData, nil, 0
+	return mapOrders, productsData, models.CustomError{Err: nil, StatusCode: 0}
 }

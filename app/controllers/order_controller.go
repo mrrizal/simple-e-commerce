@@ -23,9 +23,13 @@ func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	token := strings.Split(c.Get("Authorization"), " ")[1]
 
 	// validate customer
-	customerID, err, statusCode := this.CustomerValidator.ValidateCustomer(token)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	customerID, custErr := this.CustomerValidator.ValidateCustomer(token)
+	if custErr.Err != nil {
+		errResp := models.ErrorResponse{
+			Message:    custErr.Err.Error(),
+			StatusCode: custErr.StatusCode,
+		}
+		return errResp.Resp(c)
 	}
 
 	// parse body request
@@ -43,13 +47,20 @@ func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	order.ProductsID = temp
 
 	// create order
-	orderResp, err, statusCode := this.OrderService.CreateOrder(order)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	orderResp, custErr := this.OrderService.CreateOrder(order)
+	if custErr.Err != nil {
+		errorResp := models.ErrorResponse{
+			Message:    custErr.Err.Error(),
+			StatusCode: custErr.StatusCode,
+		}
+		return errorResp.Resp(c)
 	}
 
-	c.Status(201)
-	return c.JSON(orderResp)
+	successResp := models.SuccessResponse{
+		Message:    orderResp,
+		StatusCode: 201,
+	}
+	return successResp.Resp(c)
 }
 
 func (this *OrderController) getProductIds(productData [][]int) ([]int, map[int][]int) {
@@ -102,9 +113,13 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 		return utils.ErrorResp(c, err.Error(), statusCode)
 	}
 
-	orderData, productData, err, statusCode := this.OrderService.GetOrder(customerID)
+	orderData, productData, custErr := this.OrderService.GetOrder(customerID)
 	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+		errResp := models.ErrorResponse{
+			Message:    custErr.Err.Error(),
+			StatusCode: custErr.StatusCode,
+		}
+		return errResp.Resp(c)
 	}
 
 	this.mergeProductData(orderData, productData)
@@ -113,6 +128,9 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 		result.Results = append(result.Results, value)
 	}
 
-	c.Status(200)
-	return c.JSON(result)
+	successResp := models.SuccessResponse{
+		Message:    result,
+		StatusCode: 200,
+	}
+	return successResp.Resp(c)
 }

@@ -10,9 +10,9 @@ import (
 )
 
 type CustomerRepository interface {
-	SignUp(customer models.Customer) models.Result
+	SignUp(customer models.Customer) (models.Customer, models.CustomError)
 	IsExists(field, value string) bool
-	SignIn(models.SignInRequest) models.Result
+	SignIn(models.SignInRequest) (models.Customer, models.CustomError)
 }
 
 type customerRepository struct {
@@ -23,7 +23,7 @@ func NewCustomerRepository(db *pgxpool.Pool) CustomerRepository {
 	return &customerRepository{db: db}
 }
 
-func (this *customerRepository) SignUp(customer models.Customer) models.Result {
+func (this *customerRepository) SignUp(customer models.Customer) (models.Customer, models.CustomError) {
 	sqlStmt := `
 		INSERT INTO Customer (name, email, password)
 		VALUES ($1, $2, $3) RETURNING id
@@ -37,17 +37,11 @@ func (this *customerRepository) SignUp(customer models.Customer) models.Result {
 		customer.Password).Scan(&customerID)
 
 	if err != nil {
-		return models.Result{
-			Data:       models.Customer{},
-			Err:        err,
-			StatusCode: 500}
+		return models.Customer{}, models.CustomError{Err: err, StatusCode: 500}
 	}
 
 	customer.ID = customerID
-	return models.Result{
-		Data:       customer,
-		Err:        nil,
-		StatusCode: 0}
+	return customer, models.CustomError{Err: nil, StatusCode: 0}
 }
 
 func (this *customerRepository) IsExists(field, value string) bool {
@@ -61,7 +55,7 @@ func (this *customerRepository) IsExists(field, value string) bool {
 	return customerID != 0
 }
 
-func (this *customerRepository) SignIn(customer models.SignInRequest) models.Result {
+func (this *customerRepository) SignIn(customer models.SignInRequest) (models.Customer, models.CustomError) {
 	var cust models.Customer
 
 	sqlStmt := fmt.Sprintf("SELECT id, name, email, password FROM customer WHERE email = '%s'",
@@ -71,16 +65,8 @@ func (this *customerRepository) SignIn(customer models.SignInRequest) models.Res
 		&cust.ID, &cust.Name, &cust.Email, &cust.Password)
 
 	if err != nil {
-		return models.Result{
-			Data:       models.Customer{},
-			Err:        err,
-			StatusCode: 404,
-		}
+		return models.Customer{}, models.CustomError{Err: err, StatusCode: 404}
 	}
 
-	return models.Result{
-		Data:       cust,
-		Err:        nil,
-		StatusCode: 0,
-	}
+	return cust, models.CustomError{Err: nil, StatusCode: 0}
 }

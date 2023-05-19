@@ -19,10 +19,7 @@ func SetupRoutes(app *fiber.App, db *pgxpool.Pool) {
 	orderService := services.NewOrderService(db)
 
 	// initialize validator
-	customerValidator := validators.CustomerValidator{
-		CustomerService: customerService,
-		Config:          config,
-	}
+	customerValidator := validators.NewCustomerValidator(customerService, config)
 
 	productValidator := validators.ProductValidator{
 		ProductService: productService,
