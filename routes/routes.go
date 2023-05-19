@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"e-commerce-api/app/configs"
 	"e-commerce-api/app/controllers"
 	"e-commerce-api/app/middlewares"
 	"e-commerce-api/app/services"
@@ -12,18 +11,15 @@ import (
 )
 
 func SetupRoutes(app *fiber.App, db *pgxpool.Pool) {
-	config := configs.LoadConfig()
 	// Initialize services
 	customerService := services.NewCustomerService(db)
 	productService := services.NewProductService(db)
 	orderService := services.NewOrderService(db)
 
 	// initialize validator
-	customerValidator := validators.NewCustomerValidator(customerService, config)
+	customerValidator := validators.NewCustomerValidator(customerService)
 
-	productValidator := validators.ProductValidator{
-		ProductService: productService,
-	}
+	productValidator := validators.NewProductValidator(productService)
 
 	// Initialize controllers
 	customerController := &controllers.CustomerController{
@@ -39,7 +35,6 @@ func SetupRoutes(app *fiber.App, db *pgxpool.Pool) {
 		ProductService:    productService,
 		CustomerValidator: customerValidator,
 		ProductValidator:  productValidator,
-		Config:            config,
 	}
 
 	// Set up routes

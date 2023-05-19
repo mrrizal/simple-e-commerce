@@ -19,8 +19,10 @@ type customerValidator struct {
 	Config          configs.Config
 }
 
-func NewCustomerValidator(service services.CustomerService, config configs.Config) CustomerValidator {
-	return &customerValidator{CustomerService: service, Config: config}
+func NewCustomerValidator(service services.CustomerService) CustomerValidator {
+	return &customerValidator{
+		CustomerService: service,
+		Config:          *configs.GetConfig()}
 }
 
 func (this *customerValidator) ValidateCustomer(token string) (int, models.CustomError) {

@@ -28,7 +28,7 @@ type customerService struct {
 func NewCustomerService(db *pgxpool.Pool) CustomerService {
 	return &customerService{
 		CustomerRepository: repositories.NewCustomerRepository(db),
-		config:             configs.LoadConfig(),
+		config:             *configs.GetConfig(),
 	}
 }
 
