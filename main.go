@@ -29,8 +29,9 @@ func NewAppInstance(config configs.Config) AppInstance {
 }
 
 func main() {
-	config := configs.LoadConfig()
-	app := NewAppInstance(config)
+	config := configs.GetConfig()
+	app := NewAppInstance(*config)
+	defer app.db.Close()
 
 	routes.SetupRoutes(app.app, app.db)
 	app.app.Listen(fmt.Sprintf(":%s", config.Port))
