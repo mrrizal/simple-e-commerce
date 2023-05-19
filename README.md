@@ -17,4 +17,3 @@ todo:
 - write unittest
 - use interfaces/abstract for database
 - dockerize golang app
-- pagination for mutasi endpoint
