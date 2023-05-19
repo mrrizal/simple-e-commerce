@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"e-commerce-api/app/configs"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/services"
 	"e-commerce-api/app/validators"
-	"e-commerce-api/utils"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +14,6 @@ type OrderController struct {
 	ProductService    services.ProductService
 	CustomerValidator validators.CustomerValidator
 	ProductValidator  validators.ProductValidator
-	Config            configs.Config
 }
 
 func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
@@ -40,9 +37,13 @@ func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	order.CustomerID = int(customerID)
 
 	// validate product
-	temp, err, statusCode := this.ProductValidator.ValidateProducts(order.ProductsID)
-	if err != nil {
-		return utils.ErrorResp(c, err.Error(), statusCode)
+	temp, custErr := this.ProductValidator.ValidateProducts(order.ProductsID)
+	if custErr.Err != nil {
+		errResp := models.ErrorResponse{
+			Message:    custErr.Err.Error(),
+			StatusCode: custErr.StatusCode,
+		}
+		return errResp.Resp(c)
 	}
 	order.ProductsID = temp
 
@@ -80,12 +81,12 @@ func (this *OrderController) getProductIds(productData [][]int) ([]int, map[int]
 	return result, orderProductsInfo
 }
 
-func (this *OrderController) mergeProductData(orderData map[int]models.OrderData, productData [][]int) (error, int) {
+func (this *OrderController) mergeProductData(orderData map[int]models.OrderData, productData [][]int) models.CustomError {
 	productIDs, orderProductsInfo := this.getProductIds(productData)
 
 	tempProducts, err, statusCode := this.ProductService.GetMultiple(productIDs)
 	if err != nil {
-		return err, statusCode
+		return models.CustomError{Err: err, StatusCode: statusCode}
 	}
 
 	products := make(map[int]models.ProductResp)
@@ -101,7 +102,7 @@ func (this *OrderController) mergeProductData(orderData map[int]models.OrderData
 		orderData[orderID] = temp
 	}
 
-	return nil, 0
+	return models.CustomError{Err: nil, StatusCode: 0}
 }
 
 func (this *OrderController) Get(c *fiber.Ctx) error {
@@ -117,16 +118,24 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 		return errResp.Resp(c)
 	}
 
-	orderData, productData, custErr := this.OrderService.GetOrder(customerID)
+	orderData, productData, err := this.OrderService.GetOrder(customerID)
 	if err.Err != nil {
 		errResp := models.ErrorResponse{
-			Message:    custErr.Err.Error(),
-			StatusCode: custErr.StatusCode,
+			Message:    err.Err.Error(),
+			StatusCode: err.StatusCode,
 		}
 		return errResp.Resp(c)
 	}
 
-	this.mergeProductData(orderData, productData)
+	err = this.mergeProductData(orderData, productData)
+	if err.Err != nil {
+		errResp := models.ErrorResponse{
+			Message:    err.Err.Error(),
+			StatusCode: err.StatusCode,
+		}
+		return errResp.Resp(c)
+	}
+
 	var result models.OrderDataResp
 	for _, value := range orderData {
 		result.Results = append(result.Results, value)
