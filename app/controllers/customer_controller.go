@@ -23,17 +23,13 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 
 	resp, err := this.customerService.SignUp(customer)
 	if err.Err != nil {
-		errResp := models.ErrorResponse{
-			Message:    err.Err.Error(),
-			StatusCode: err.StatusCode}
-		return errResp.Resp(c)
+		return models.ErrorResponse(c, err)
 	}
 
-	successResp := models.SuccessResponse{
+	return models.SuccessResponse(c, models.SuccessMessage{
 		Message:    models.SignUpResponseOk{Token: resp},
 		StatusCode: 201,
-	}
-	return successResp.Resp(c)
+	})
 }
 
 func (this *CustomerController) SignIn(c *fiber.Ctx) error {
@@ -44,16 +40,11 @@ func (this *CustomerController) SignIn(c *fiber.Ctx) error {
 
 	resp, err := this.customerService.SignIn(customer)
 	if err.Err != nil {
-		errResp := models.ErrorResponse{
-			Message:    err.Err.Error(),
-			StatusCode: err.StatusCode,
-		}
-		return errResp.Resp(c)
+		return models.ErrorResponse(c, err)
 	}
 
-	successResp := models.SuccessResponse{
+	return models.SuccessResponse(c, models.SuccessMessage{
 		Message:    models.SignUpResponseOk{Token: resp},
-		StatusCode: 201,
-	}
-	return successResp.Resp(c)
+		StatusCode: 200,
+	})
 }

@@ -16,7 +16,7 @@ CREATE TABLE "order" (
 CREATE TABLE "order_detail" (
   "id" SERIAL PRIMARY KEY,
   "order_id" integer,
-  "product_id" integer,
+  "product_id" integer
 );
 
 CREATE TABLE "customer" (
@@ -25,13 +25,6 @@ CREATE TABLE "customer" (
   "email" varchar(100),
   "password" varchar(100),
   "created_at" timestamp DEFAULT (now())
-);
-
-CREATE TABLE "admin" (
-  "id" SERIAL PRIMARY KEY,
-  "username" varchar(100),
-  "password" varchar(100),
-  "is_active" bool
 );
 
 CREATE INDEX "status_idx" ON "order" ("status");

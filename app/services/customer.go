@@ -15,8 +15,8 @@ import (
 )
 
 type CustomerService interface {
-	SignUp(models.Customer) (string, models.CustomError)
-	SignIn(models.SignInRequest) (string, models.CustomError)
+	SignUp(models.Customer) (string, models.ErrorMessage)
+	SignIn(models.SignInRequest) (string, models.ErrorMessage)
 	IsExists(int) bool
 }
 
@@ -62,15 +62,15 @@ func (this *customerService) generateJWTToken(customer models.Customer) (string,
 	return signedToken, nil
 }
 
-func (this *customerService) SignUp(customer models.Customer) (string, models.CustomError) {
+func (this *customerService) SignUp(customer models.Customer) (string, models.ErrorMessage) {
 	emailIsExists := this.CustomerRepository.IsExists("email", customer.Email)
 	if emailIsExists {
-		return "", models.CustomError{Err: errors.New("email already exists"), StatusCode: 400}
+		return "", models.ErrorMessage{Err: errors.New("email already exists"), StatusCode: 400}
 	}
 
 	tempPassword, err := this.generatePassword(customer.Password)
 	if err != nil {
-		return "", models.CustomError{Err: err, StatusCode: 500}
+		return "", models.ErrorMessage{Err: err, StatusCode: 500}
 	}
 	customer.Password = tempPassword
 
@@ -81,32 +81,32 @@ func (this *customerService) SignUp(customer models.Customer) (string, models.Cu
 
 	token, err := this.generateJWTToken(resp)
 	if err != nil {
-		return "", models.CustomError{Err: err, StatusCode: 500}
+		return "", models.ErrorMessage{Err: err, StatusCode: 500}
 	}
 
-	return token, models.CustomError{nil, 0}
+	return token, models.ErrorMessage{nil, 0}
 }
 
-func (this *customerService) SignIn(customer models.SignInRequest) (string, models.CustomError) {
+func (this *customerService) SignIn(customer models.SignInRequest) (string, models.ErrorMessage) {
 	resp, custErr := this.CustomerRepository.SignIn(customer)
 	if custErr.Err != nil {
 		return "", custErr
 	}
 
 	if resp.ID == 0 {
-		return "", models.CustomError{Err: errors.New("user doesn't exists"), StatusCode: 404}
+		return "", models.ErrorMessage{Err: errors.New("user doesn't exists"), StatusCode: 404}
 	}
 
 	isValidPassword := this.verifyPassword(resp.Password, customer.Password)
 	if !isValidPassword {
-		return "", models.CustomError{Err: errors.New("invalid email or password"), StatusCode: 401}
+		return "", models.ErrorMessage{Err: errors.New("invalid email or password"), StatusCode: 401}
 	}
 
 	token, err := this.generateJWTToken(resp)
 	if err != nil {
-		return "", models.CustomError{Err: err, StatusCode: 500}
+		return "", models.ErrorMessage{Err: err, StatusCode: 500}
 	}
-	return token, models.CustomError{Err: nil, StatusCode: 0}
+	return token, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
 func (this *customerService) IsExists(id int) bool {

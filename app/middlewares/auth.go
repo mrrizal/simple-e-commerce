@@ -1,7 +1,8 @@
 package middlewares
 
 import (
-	"e-commerce-api/utils"
+	"e-commerce-api/app/models"
+	"errors"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,11 +11,11 @@ import (
 func JWTMiddleware(c *fiber.Ctx) error {
 	temp := c.Get("Authorization")
 	if !strings.HasPrefix(temp, "Bearer") {
-		return utils.ErrorResp(c, "invalid token", 401)
+		return models.ErrorResponse(c, models.ErrorMessage{Err: errors.New("invalid token"), StatusCode: 401})
 	}
 
 	if len(strings.Split(temp, " ")) != 2 {
-		return utils.ErrorResp(c, "invalid token", 401)
+		return models.ErrorResponse(c, models.ErrorMessage{Err: errors.New("invalid token"), StatusCode: 401})
 	}
 
 	return c.Next()

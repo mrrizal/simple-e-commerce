@@ -11,7 +11,7 @@ import (
 )
 
 type CustomerValidator interface {
-	ValidateCustomer(string) (int, models.CustomError)
+	ValidateCustomer(string) (int, models.ErrorMessage)
 }
 
 type customerValidator struct {
@@ -25,15 +25,15 @@ func NewCustomerValidator(service services.CustomerService) CustomerValidator {
 		Config:          *configs.GetConfig()}
 }
 
-func (this *customerValidator) ValidateCustomer(token string) (int, models.CustomError) {
+func (this *customerValidator) ValidateCustomer(token string) (int, models.ErrorMessage) {
 	customerInfo, err := utils.ParseJWTToken(token, this.Config.SecretKey)
 	if err != nil {
-		return 0, models.CustomError{Err: err, StatusCode: 400}
+		return 0, models.ErrorMessage{Err: err, StatusCode: 400}
 	}
 
 	customerID := customerInfo["claims"].(jwt.MapClaims)["id"].(float64)
 	if !this.CustomerService.IsExists(int(customerID)) {
-		return 0, models.CustomError{Err: errors.New("invalid token"), StatusCode: 401}
+		return 0, models.ErrorMessage{Err: errors.New("invalid token"), StatusCode: 401}
 	}
-	return int(customerID), models.CustomError{Err: nil, StatusCode: 0}
+	return int(customerID), models.ErrorMessage{Err: nil, StatusCode: 0}
 }

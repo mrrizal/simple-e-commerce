@@ -8,9 +8,9 @@ import (
 )
 
 type ProductService interface {
-	Get(int) (models.ProductResp, models.CustomError)
-	GetAll() (models.ProductList, models.CustomError)
-	GetMultiple(ids []int) (models.ProductList, models.CustomError)
+	Get(int) (models.ProductResp, models.ErrorMessage)
+	GetAll() (models.ProductList, models.ErrorMessage)
+	GetMultiple(ids []int) (models.ProductList, models.ErrorMessage)
 }
 
 type productService struct {
@@ -33,17 +33,17 @@ func (this *productService) Parse(product models.Product) models.ProductResp {
 	return result
 }
 
-func (this *productService) Get(productID int) (models.ProductResp, models.CustomError) {
+func (this *productService) Get(productID int) (models.ProductResp, models.ErrorMessage) {
 	product, err := this.ProductRepository.Get(productID)
 	if err.Err != nil {
 		return models.ProductResp{}, err
 	}
 
 	result := this.Parse(product)
-	return result, models.CustomError{Err: nil, StatusCode: 0}
+	return result, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
-func (this *productService) GetAll() (models.ProductList, models.CustomError) {
+func (this *productService) GetAll() (models.ProductList, models.ErrorMessage) {
 	products, err := this.ProductRepository.GetAll()
 	if err.Err != nil {
 		return models.ProductList{}, err
@@ -53,10 +53,10 @@ func (this *productService) GetAll() (models.ProductList, models.CustomError) {
 	for _, product := range products {
 		result.Results = append(result.Results, this.Parse(product))
 	}
-	return result, models.CustomError{Err: nil, StatusCode: 0}
+	return result, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
-func (this *productService) GetMultiple(ids []int) (models.ProductList, models.CustomError) {
+func (this *productService) GetMultiple(ids []int) (models.ProductList, models.ErrorMessage) {
 	products, err := this.ProductRepository.GetMultiple(ids)
 	if err.Err != nil {
 		return models.ProductList{}, err
@@ -66,5 +66,5 @@ func (this *productService) GetMultiple(ids []int) (models.ProductList, models.C
 	for _, product := range products {
 		result.Results = append(result.Results, this.Parse(product))
 	}
-	return result, models.CustomError{Err: nil, StatusCode: 0}
+	return result, models.ErrorMessage{Err: nil, StatusCode: 0}
 }

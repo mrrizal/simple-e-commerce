@@ -1,6 +1,8 @@
 package models
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type SignUpResponseOk struct {
 	Token string `json:"token"`
@@ -29,27 +31,27 @@ type Result struct {
 	StatusCode int
 }
 
-type ErrorResponse struct {
-	Message    string `json:"message"`
-	StatusCode int
+type ErrResp struct {
+	Message string `json:"message"`
 }
 
-func (this *ErrorResponse) Resp(c *fiber.Ctx) error {
-	c.Status(this.StatusCode)
-	return c.JSON(this.Message)
+func ErrorResponse(c *fiber.Ctx, err ErrorMessage) error {
+	errResp := ErrResp{Message: err.Err.Error()}
+	c.Status(err.StatusCode)
+	return c.JSON(errResp)
 }
 
-type SuccessResponse struct {
+type SuccessMessage struct {
 	Message    interface{}
 	StatusCode int
 }
 
-func (this *SuccessResponse) Resp(c *fiber.Ctx) error {
-	c.Status(this.StatusCode)
-	return c.JSON(this.Message)
+func SuccessResponse(c *fiber.Ctx, message SuccessMessage) error {
+	c.Status(message.StatusCode)
+	return c.JSON(message.Message)
 }
 
-type CustomError struct {
+type ErrorMessage struct {
 	Err        error
 	StatusCode int
 }

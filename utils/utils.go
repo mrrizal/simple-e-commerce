@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"e-commerce-api/app/models"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,14 +23,4 @@ func ParseJWTToken(tokenString, secretKey string) (map[string]interface{}, error
 
 	return map[string]interface{}{}, errors.New("invalid token")
 
-}
-
-func ErrorResp(c *fiber.Ctx, message string, statusCode int) error {
-	var result models.ErrorResponse
-	result.Message = message
-	if statusCode == 0 {
-		statusCode = 400
-	}
-	c.Status(statusCode)
-	return c.JSON(result)
 }

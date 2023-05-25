@@ -8,8 +8,8 @@ import (
 )
 
 type OrderService interface {
-	CreateOrder(models.OrderRequest) (models.OrderResp, models.CustomError)
-	GetOrder(int) (map[int]models.OrderData, [][]int, models.CustomError)
+	CreateOrder(models.OrderRequest) (models.OrderResp, models.ErrorMessage)
+	GetOrder(int) (map[int]models.OrderData, [][]int, models.ErrorMessage)
 }
 
 type orderService struct {
@@ -22,7 +22,7 @@ func NewOrderService(db *pgxpool.Pool) OrderService {
 	}
 }
 
-func (this *orderService) CreateOrder(order models.OrderRequest) (models.OrderResp, models.CustomError) {
+func (this *orderService) CreateOrder(order models.OrderRequest) (models.OrderResp, models.ErrorMessage) {
 	orderResp, err := this.OrderRepository.CreateOrder(order)
 	if err.Err != nil {
 		return models.OrderResp{}, err
@@ -33,10 +33,10 @@ func (this *orderService) CreateOrder(order models.OrderRequest) (models.OrderRe
 		return models.OrderResp{}, err
 	}
 
-	return orderResp, models.CustomError{Err: nil, StatusCode: 0}
+	return orderResp, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
-func (this *orderService) GetOrder(customerID int) (map[int]models.OrderData, [][]int, models.CustomError) {
+func (this *orderService) GetOrder(customerID int) (map[int]models.OrderData, [][]int, models.ErrorMessage) {
 	orders, err := this.OrderRepository.GetOrder(customerID)
 	if err.Err != nil {
 		return make(map[int]models.OrderData), [][]int{}, err
@@ -63,5 +63,5 @@ func (this *orderService) GetOrder(customerID int) (map[int]models.OrderData, []
 	for _, orderDetail := range orderDetails {
 		productsData = append(productsData, []int{orderDetail.OrderID, orderDetail.ProductID})
 	}
-	return mapOrders, productsData, models.CustomError{Err: nil, StatusCode: 0}
+	return mapOrders, productsData, models.ErrorMessage{Err: nil, StatusCode: 0}
 }

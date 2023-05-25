@@ -7,7 +7,7 @@ import (
 )
 
 type ProductValidator interface {
-	ValidateProducts([]int) ([]int, models.CustomError)
+	ValidateProducts([]int) ([]int, models.ErrorMessage)
 }
 
 type productValidator struct {
@@ -18,7 +18,7 @@ func NewProductValidator(service services.ProductService) ProductValidator {
 	return &productValidator{ProductService: service}
 }
 
-func (this *productValidator) ValidateProducts(ids []int) ([]int, models.CustomError) {
+func (this *productValidator) ValidateProducts(ids []int) ([]int, models.ErrorMessage) {
 	products, err := this.ProductService.GetMultiple(ids)
 	if err.Err != nil {
 		return []int{}, err
@@ -30,8 +30,8 @@ func (this *productValidator) ValidateProducts(ids []int) ([]int, models.CustomE
 	}
 
 	if len(result) == 0 {
-		return result, models.CustomError{Err: errors.New("invalid products id"), StatusCode: 400}
+		return result, models.ErrorMessage{Err: errors.New("invalid products id"), StatusCode: 400}
 	}
 
-	return result, models.CustomError{Err: nil, StatusCode: 0}
+	return result, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
