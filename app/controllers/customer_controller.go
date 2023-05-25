@@ -8,7 +8,11 @@ import (
 )
 
 type CustomerController struct {
-	CustomerService services.CustomerService
+	customerService services.CustomerService
+}
+
+func NewCustomerController(customerService services.CustomerService) CustomerController {
+	return CustomerController{customerService: customerService}
 }
 
 func (this *CustomerController) SingUp(c *fiber.Ctx) error {
@@ -17,7 +21,7 @@ func (this *CustomerController) SingUp(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp, err := this.CustomerService.SignUp(customer)
+	resp, err := this.customerService.SignUp(customer)
 	if err.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    err.Err.Error(),
@@ -38,7 +42,7 @@ func (this *CustomerController) SignIn(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp, err := this.CustomerService.SignIn(customer)
+	resp, err := this.customerService.SignIn(customer)
 	if err.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    err.Err.Error(),

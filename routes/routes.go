@@ -21,20 +21,10 @@ func SetupRoutes(app *fiber.App, db *pgxpool.Pool) {
 	productValidator := validators.NewProductValidator(productService)
 
 	// Initialize controllers
-	customerController := &controllers.CustomerController{
-		CustomerService: customerService,
-	}
-
-	productController := &controllers.ProductController{
-		ProductService: productService,
-	}
-
-	orderController := &controllers.OrderController{
-		OrderService:      orderService,
-		ProductService:    productService,
-		CustomerValidator: customerValidator,
-		ProductValidator:  productValidator,
-	}
+	customerController := controllers.NewCustomerController(customerService)
+	productController := controllers.NewProductController(productService)
+	orderController := controllers.NewOrderController(orderService, productService,
+		customerValidator, productValidator)
 
 	// Set up routes
 	api := app.Group("/api")

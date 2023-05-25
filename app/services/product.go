@@ -7,17 +7,23 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type ProductService struct {
+type ProductService interface {
+	Get(int) (models.ProductResp, models.CustomError)
+	GetAll() (models.ProductList, models.CustomError)
+	GetMultiple(ids []int) (models.ProductList, models.CustomError)
+}
+
+type productService struct {
 	ProductRepository repositories.ProductRepository
 }
 
 func NewProductService(db *pgxpool.Pool) ProductService {
-	return ProductService{
+	return &productService{
 		ProductRepository: repositories.NewProductRepository(db),
 	}
 }
 
-func (this *ProductService) Parse(product models.Product) models.ProductResp {
+func (this *productService) Parse(product models.Product) models.ProductResp {
 	var result models.ProductResp
 	result.ID = product.ID
 	result.Name = product.Name
@@ -27,38 +33,38 @@ func (this *ProductService) Parse(product models.Product) models.ProductResp {
 	return result
 }
 
-func (this *ProductService) Get(productID int) (models.ProductResp, error, int) {
-	product, err, statusCode := this.ProductRepository.Get(productID)
-	if err != nil {
-		return models.ProductResp{}, err, statusCode
+func (this *productService) Get(productID int) (models.ProductResp, models.CustomError) {
+	product, err := this.ProductRepository.Get(productID)
+	if err.Err != nil {
+		return models.ProductResp{}, err
 	}
 
 	result := this.Parse(product)
-	return result, nil, 0
+	return result, models.CustomError{Err: nil, StatusCode: 0}
 }
 
-func (this *ProductService) GetAll() (models.ProductList, error, int) {
-	products, err, statusCode := this.ProductRepository.GetAll()
-	if err != nil {
-		return models.ProductList{}, err, statusCode
+func (this *productService) GetAll() (models.ProductList, models.CustomError) {
+	products, err := this.ProductRepository.GetAll()
+	if err.Err != nil {
+		return models.ProductList{}, err
 	}
 
 	var result models.ProductList
 	for _, product := range products {
 		result.Results = append(result.Results, this.Parse(product))
 	}
-	return result, nil, 0
+	return result, models.CustomError{Err: nil, StatusCode: 0}
 }
 
-func (this *ProductService) GetMultiple(ids []int) (models.ProductList, error, int) {
-	products, err, statusCode := this.ProductRepository.GetMultiple(ids)
-	if err != nil {
-		return models.ProductList{}, err, statusCode
+func (this *productService) GetMultiple(ids []int) (models.ProductList, models.CustomError) {
+	products, err := this.ProductRepository.GetMultiple(ids)
+	if err.Err != nil {
+		return models.ProductList{}, err
 	}
 
 	var result models.ProductList
 	for _, product := range products {
 		result.Results = append(result.Results, this.Parse(product))
 	}
-	return result, nil, 0
+	return result, models.CustomError{Err: nil, StatusCode: 0}
 }

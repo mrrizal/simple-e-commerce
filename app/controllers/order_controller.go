@@ -10,17 +10,27 @@ import (
 )
 
 type OrderController struct {
-	OrderService      services.OrderService
-	ProductService    services.ProductService
-	CustomerValidator validators.CustomerValidator
-	ProductValidator  validators.ProductValidator
+	orderService      services.OrderService
+	productService    services.ProductService
+	customerValidator validators.CustomerValidator
+	productValidator  validators.ProductValidator
+}
+
+func NewOrderController(orderService services.OrderService, productService services.ProductService,
+	customerValidator validators.CustomerValidator, productValidator validators.ProductValidator) OrderController {
+	return OrderController{
+		orderService:      orderService,
+		productService:    productService,
+		customerValidator: customerValidator,
+		productValidator:  productValidator,
+	}
 }
 
 func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	token := strings.Split(c.Get("Authorization"), " ")[1]
 
 	// validate customer
-	customerID, custErr := this.CustomerValidator.ValidateCustomer(token)
+	customerID, custErr := this.customerValidator.ValidateCustomer(token)
 	if custErr.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    custErr.Err.Error(),
@@ -37,7 +47,7 @@ func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	order.CustomerID = int(customerID)
 
 	// validate product
-	temp, custErr := this.ProductValidator.ValidateProducts(order.ProductsID)
+	temp, custErr := this.productValidator.ValidateProducts(order.ProductsID)
 	if custErr.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    custErr.Err.Error(),
@@ -48,7 +58,7 @@ func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
 	order.ProductsID = temp
 
 	// create order
-	orderResp, custErr := this.OrderService.CreateOrder(order)
+	orderResp, custErr := this.orderService.CreateOrder(order)
 	if custErr.Err != nil {
 		errorResp := models.ErrorResponse{
 			Message:    custErr.Err.Error(),
@@ -84,9 +94,9 @@ func (this *OrderController) getProductIds(productData [][]int) ([]int, map[int]
 func (this *OrderController) mergeProductData(orderData map[int]models.OrderData, productData [][]int) models.CustomError {
 	productIDs, orderProductsInfo := this.getProductIds(productData)
 
-	tempProducts, err, statusCode := this.ProductService.GetMultiple(productIDs)
-	if err != nil {
-		return models.CustomError{Err: err, StatusCode: statusCode}
+	tempProducts, err := this.productService.GetMultiple(productIDs)
+	if err.Err != nil {
+		return err
 	}
 
 	products := make(map[int]models.ProductResp)
@@ -109,7 +119,7 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 	token := strings.Split(c.Get("Authorization"), " ")[1]
 
 	// validate customer
-	customerID, err := this.CustomerValidator.ValidateCustomer(token)
+	customerID, err := this.customerValidator.ValidateCustomer(token)
 	if err.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    err.Err.Error(),
@@ -118,7 +128,7 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 		return errResp.Resp(c)
 	}
 
-	orderData, productData, err := this.OrderService.GetOrder(customerID)
+	orderData, productData, err := this.orderService.GetOrder(customerID)
 	if err.Err != nil {
 		errResp := models.ErrorResponse{
 			Message:    err.Err.Error(),

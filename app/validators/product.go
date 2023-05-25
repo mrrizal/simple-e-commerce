@@ -19,9 +19,9 @@ func NewProductValidator(service services.ProductService) ProductValidator {
 }
 
 func (this *productValidator) ValidateProducts(ids []int) ([]int, models.CustomError) {
-	products, err, statusCode := this.ProductService.GetMultiple(ids)
-	if err != nil {
-		return []int{}, models.CustomError{Err: err, StatusCode: statusCode}
+	products, err := this.ProductService.GetMultiple(ids)
+	if err.Err != nil {
+		return []int{}, err
 	}
 
 	result := []int{}
