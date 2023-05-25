@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type OrderRepository interface {
@@ -18,10 +16,10 @@ type OrderRepository interface {
 }
 
 type orderRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewOrderRepository(db *pgxpool.Pool) OrderRepository {
+func NewOrderRepository(db database.DB) OrderRepository {
 	return &orderRepository{db: db}
 }
 
@@ -46,19 +44,19 @@ func (this *orderRepository) CreateOrderDetail(orderID int, order models.OrderRe
 
 	tx, err := this.db.Begin(context.Background())
 	if err != nil {
+		defer tx.Rollback(context.Background())
 		return models.ErrorMessage{Err: err, StatusCode: 500}
 	}
-	defer tx.Rollback(context.Background())
 
-	copyFrom := pgx.CopyFromRows(records)
-
-	_, err = tx.CopyFrom(context.Background(), pgx.Identifier{"order_detail"}, columns, copyFrom)
+	_, err = tx.BulkInsert(context.Background(), "order_detail", columns, records)
 	if err != nil {
+		defer tx.Rollback(context.Background())
 		return models.ErrorMessage{Err: err, StatusCode: 500}
 	}
 
 	err = tx.Commit(context.Background())
 	if err != nil {
+		defer tx.Rollback(context.Background())
 		return models.ErrorMessage{Err: err, StatusCode: 500}
 	}
 

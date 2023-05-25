@@ -1,12 +1,11 @@
 package repositories
 
 import (
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 
 	"context"
 	"fmt"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type CustomerRepository interface {
@@ -16,10 +15,10 @@ type CustomerRepository interface {
 }
 
 type customerRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewCustomerRepository(db *pgxpool.Pool) CustomerRepository {
+func NewCustomerRepository(db database.DB) CustomerRepository {
 	return &customerRepository{db: db}
 }
 

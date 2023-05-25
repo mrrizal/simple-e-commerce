@@ -1,10 +1,9 @@
 package services
 
 import (
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ProductService interface {
@@ -17,7 +16,7 @@ type productService struct {
 	ProductRepository repositories.ProductRepository
 }
 
-func NewProductService(db *pgxpool.Pool) ProductService {
+func NewProductService(db database.DB) ProductService {
 	return &productService{
 		ProductRepository: repositories.NewProductRepository(db),
 	}

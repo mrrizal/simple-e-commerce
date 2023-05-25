@@ -2,6 +2,7 @@ package services
 
 import (
 	"e-commerce-api/app/configs"
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,7 +25,7 @@ type customerService struct {
 	config             configs.Config
 }
 
-func NewCustomerService(db *pgxpool.Pool) CustomerService {
+func NewCustomerService(db database.DB) CustomerService {
 	return &customerService{
 		CustomerRepository: repositories.NewCustomerRepository(db),
 		config:             *configs.GetConfig(),

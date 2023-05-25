@@ -1,10 +1,9 @@
 package services
 
 import (
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type OrderService interface {
@@ -16,7 +15,7 @@ type orderService struct {
 	OrderRepository repositories.OrderRepository
 }
 
-func NewOrderService(db *pgxpool.Pool) OrderService {
+func NewOrderService(db database.DB) OrderService {
 	return &orderService{
 		OrderRepository: repositories.NewOrderRepository(db),
 	}

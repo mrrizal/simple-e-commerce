@@ -2,15 +2,15 @@ package routes
 
 import (
 	"e-commerce-api/app/controllers"
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/middlewares"
 	"e-commerce-api/app/services"
 	"e-commerce-api/app/validators"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func SetupRoutes(app *fiber.App, db *pgxpool.Pool) {
+func SetupRoutes(app *fiber.App, db database.DB) {
 	// Initialize services
 	customerService := services.NewCustomerService(db)
 	productService := services.NewProductService(db)

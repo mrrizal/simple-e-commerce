@@ -1,13 +1,12 @@
 package repositories
 
 import (
+	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ProductRepository interface {
@@ -17,10 +16,10 @@ type ProductRepository interface {
 }
 
 type productRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewProductRepository(db *pgxpool.Pool) ProductRepository {
+func NewProductRepository(db database.DB) ProductRepository {
 	return &productRepository{db: db}
 }
 

@@ -2,22 +2,22 @@ package main
 
 import (
 	"e-commerce-api/app/configs"
+	"e-commerce-api/app/database"
 	"e-commerce-api/routes"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AppInstance struct {
 	app *fiber.App
-	db  *pgxpool.Pool
+	db  database.DB
 }
 
 func NewAppInstance(config configs.Config) AppInstance {
-	db, err := configs.NewDB(config)
+	db, err := database.NewDB(config)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}

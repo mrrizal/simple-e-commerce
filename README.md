@@ -1,4 +1,5 @@
 # E-Commerce API
+Example golang app that following clean architecture.
 
 ## Run database
 `docker-compose up`
