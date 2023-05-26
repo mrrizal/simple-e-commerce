@@ -1,10 +1,7 @@
 # E-Commerce API
 Example golang app that following clean architecture.
-
 If you take a look the source code, i'm spliting between the controller and fiber handler,
-
 just in case you want to change the implemention for example using other framework or other protocol like grpc,
-
 its can easly replaced
 
 ## Run database
