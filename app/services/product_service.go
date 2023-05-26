@@ -1,7 +1,6 @@
 package services
 
 import (
-	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
 )
@@ -16,10 +15,8 @@ type productService struct {
 	ProductRepository repositories.ProductRepository
 }
 
-func NewProductService(db database.DB) ProductService {
-	return &productService{
-		ProductRepository: repositories.NewProductRepository(db),
-	}
+func NewProductService(repository repositories.ProductRepository) ProductService {
+	return &productService{ProductRepository: repository}
 }
 
 func (this *productService) Parse(product models.Product) models.ProductResp {

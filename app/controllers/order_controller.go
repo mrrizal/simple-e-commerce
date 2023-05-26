@@ -4,9 +4,6 @@ import (
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/services"
 	"e-commerce-api/app/validators"
-	"strings"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type OrderController struct {
@@ -26,36 +23,28 @@ func NewOrderController(orderService services.OrderService, productService servi
 	}
 }
 
-func (this *OrderController) CreateOrder(c *fiber.Ctx) error {
-	token := strings.Split(c.Get("Authorization"), " ")[1]
-
+func (this *OrderController) CreateOrder(token string, order models.OrderRequest) interface{} {
 	// validate customer
 	customerID, custErr := this.customerValidator.ValidateCustomer(token)
 	if custErr.Err != nil {
-		return models.ErrorResponse(c, custErr)
-	}
-
-	// parse body request
-	var order models.OrderRequest
-	if err := c.BodyParser(&order); err != nil {
-		return err
+		return custErr
 	}
 	order.CustomerID = int(customerID)
 
 	// validate product
 	temp, custErr := this.productValidator.ValidateProducts(order.ProductsID)
 	if custErr.Err != nil {
-		return models.ErrorResponse(c, custErr)
+		return custErr
 	}
 	order.ProductsID = temp
 
 	// create order
 	orderResp, custErr := this.orderService.CreateOrder(order)
 	if custErr.Err != nil {
-		return models.ErrorResponse(c, custErr)
+		return custErr
 	}
 
-	return models.SuccessResponse(c, models.SuccessMessage{Message: orderResp, StatusCode: 201})
+	return models.SuccessMessage{Message: orderResp, StatusCode: 201}
 }
 
 func (this *OrderController) getProductIds(productData [][]int) ([]int, map[int][]int) {
@@ -100,23 +89,21 @@ func (this *OrderController) mergeProductData(orderData map[int]models.OrderData
 	return models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
-func (this *OrderController) Get(c *fiber.Ctx) error {
-	token := strings.Split(c.Get("Authorization"), " ")[1]
-
+func (this *OrderController) Get(token string) interface{} {
 	// validate customer
 	customerID, err := this.customerValidator.ValidateCustomer(token)
 	if err.Err != nil {
-		return models.ErrorResponse(c, err)
+		return err
 	}
 
 	orderData, productData, err := this.orderService.GetOrder(customerID)
 	if err.Err != nil {
-		return models.ErrorResponse(c, err)
+		return err
 	}
 
 	err = this.mergeProductData(orderData, productData)
 	if err.Err != nil {
-		return models.ErrorResponse(c, err)
+		return err
 	}
 
 	var result models.OrderDataResp
@@ -124,5 +111,5 @@ func (this *OrderController) Get(c *fiber.Ctx) error {
 		result.Results = append(result.Results, value)
 	}
 
-	return models.SuccessResponse(c, models.SuccessMessage{Message: result, StatusCode: 200})
+	return models.SuccessMessage{Message: result, StatusCode: 200}
 }

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
 )
@@ -15,10 +14,8 @@ type orderService struct {
 	OrderRepository repositories.OrderRepository
 }
 
-func NewOrderService(db database.DB) OrderService {
-	return &orderService{
-		OrderRepository: repositories.NewOrderRepository(db),
-	}
+func NewOrderService(repository repositories.OrderRepository) OrderService {
+	return &orderService{OrderRepository: repository}
 }
 
 func (this *orderService) CreateOrder(order models.OrderRequest) (models.OrderResp, models.ErrorMessage) {

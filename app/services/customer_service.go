@@ -2,7 +2,6 @@ package services
 
 import (
 	"e-commerce-api/app/configs"
-	"e-commerce-api/app/database"
 	"e-commerce-api/app/models"
 	"e-commerce-api/app/repositories"
 	"strconv"
@@ -25,9 +24,9 @@ type customerService struct {
 	config             configs.Config
 }
 
-func NewCustomerService(db database.DB) CustomerService {
+func NewCustomerService(repository repositories.CustomerRepository) CustomerService {
 	return &customerService{
-		CustomerRepository: repositories.NewCustomerRepository(db),
+		CustomerRepository: repository,
 		config:             *configs.GetConfig(),
 	}
 }
@@ -84,7 +83,7 @@ func (this *customerService) SignUp(customer models.Customer) (string, models.Er
 		return "", models.ErrorMessage{Err: err, StatusCode: 500}
 	}
 
-	return token, models.ErrorMessage{nil, 0}
+	return token, models.ErrorMessage{Err: nil, StatusCode: 0}
 }
 
 func (this *customerService) SignIn(customer models.SignInRequest) (string, models.ErrorMessage) {
