@@ -28,12 +28,13 @@ func (this *customerRepository) SignUp(customer models.Customer) (models.Custome
 		VALUES ($1, $2, $3) RETURNING id
 	`
 	var customerID int
-	err := this.db.QueryRow(
+	row := this.db.QueryRow(
 		context.Background(),
 		sqlStmt,
 		customer.Name,
 		customer.Email,
-		customer.Password).Scan(&customerID)
+		customer.Password)
+	err := row.Scan(&customerID)
 
 	if err != nil {
 		return models.Customer{}, models.ErrorMessage{Err: err, StatusCode: 500}

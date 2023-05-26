@@ -11,8 +11,6 @@ type Rows interface {
 	Err() error
 	Next() bool
 	Scan(dest ...any) error
-	Values() ([]any, error)
-	RawValues() [][]byte
 }
 
 type Transaction interface {
