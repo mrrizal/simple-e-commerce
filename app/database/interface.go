@@ -1,3 +1,8 @@
+/*
+	here, we define the interface, we can say also, we define the behavior of interface
+	that will be implemented at postgres.go
+*/
+
 package database
 
 import "context"

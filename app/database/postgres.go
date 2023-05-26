@@ -1,3 +1,4 @@
+// implement of database interface, in this case i'm using postgres
 package database
 
 import (

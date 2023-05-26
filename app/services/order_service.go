@@ -1,3 +1,4 @@
+// this package contain function that do the bussiness logic
 package services
 
 import (

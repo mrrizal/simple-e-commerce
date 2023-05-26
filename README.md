@@ -1,6 +1,12 @@
 # E-Commerce API
 Example golang app that following clean architecture.
 
+If you take a look the source code, i'm spliting between the controller and fiber handler,
+
+just in case you want to change the implemention for example using other framework or other protocol like grpc,
+
+its can easly replaced
+
 ## Run database
 `docker-compose up`
 
@@ -13,8 +19,8 @@ Example golang app that following clean architecture.
 ## Run
 `go run main.go`
 
+## test with coverage
+`go clean -testcache && go test -v -coverprofile=coverage.out ./...`
 
-todo:
-- write unittest
-- use interfaces/abstract for database
-- dockerize golang app
+## see coverage in html format
+`go tool cover -html=coverage.out`

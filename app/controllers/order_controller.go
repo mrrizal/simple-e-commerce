@@ -1,3 +1,4 @@
+// this packag handle request from user and coordine with multiple services (services folder) if needed
 package controllers
 
 import (

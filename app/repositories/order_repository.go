@@ -1,3 +1,4 @@
+// this package contain function that need interact to database
 package repositories
 
 import (
