@@ -16,8 +16,8 @@ its can easly replaced
 ## Run
 `go run main.go`
 
-## test with coverage
+## Test with coverage
 `go clean -testcache && go test -v -coverprofile=coverage.out ./...`
 
-## see coverage in html format
+## See coverage in html format
 `go tool cover -html=coverage.out`
